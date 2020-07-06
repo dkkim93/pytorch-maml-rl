@@ -1,12 +1,14 @@
 import gym
+from gym_minigrid.wrappers import VectorObsWrapper
 
-def make_env(env_name, env_kwargs={}, seed=None):
+
+def make_env(env_name):
     def _make_env():
-        env = gym.make(env_name, **env_kwargs)
-        if hasattr(env, 'seed'):
-            env.seed(seed)
-        return env
+        env = gym.make(env_name)
+        env.max_steps = min(env.max_steps, 20)
+        return VectorObsWrapper(env)        
     return _make_env
+
 
 class Sampler(object):
     def __init__(self,

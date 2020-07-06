@@ -1,10 +1,9 @@
-import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.distributions import Categorical
-
 from collections import OrderedDict
 from maml_rl.policies.policy import Policy, weight_init
+
 
 class CategoricalMLPPolicy(Policy):
     """Policy network based on a multi-layer perceptron (MLP), with a 
@@ -41,8 +40,9 @@ class CategoricalMLPPolicy(Policy):
                               bias=params['layer{0}.bias'.format(i)])
             output = self.nonlinearity(output)
 
-        logits = F.linear(output,
-                          weight=params['layer{0}.weight'.format(self.num_layers)],
-                          bias=params['layer{0}.bias'.format(self.num_layers)])
+        logits = F.linear(
+            output,
+            weight=params['layer{0}.weight'.format(self.num_layers)],
+            bias=params['layer{0}.bias'.format(self.num_layers)])
 
         return Categorical(logits=logits)
