@@ -21,4 +21,6 @@ export CUDA_VISIBLE_DEVICES=-1
 export PYTHONPATH=./../gym-minigrid:$PYTHONPATH
 
 # Begin experiment
-python3.6 train.py --config configs/minigrid/empty.yaml
+python3.6 train.py \
+--config configs/minigrid/empty.yaml \
+--output-folder log-minigrid-empty

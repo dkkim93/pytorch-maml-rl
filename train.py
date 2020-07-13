@@ -3,13 +3,14 @@ import json
 import os
 import yaml
 import gym_minigrid  # noqa
-from tqdm import trange
+import numpy as np
 from maml_rl.metalearners import MAMLTRPO
 from maml_rl.baseline import LinearFeatureBaseline
 from maml_rl.samplers import MultiTaskSampler
 from maml_rl.samplers.sampler import make_env
 from maml_rl.utils.helpers import get_policy_for_env, get_input_size
 from maml_rl.utils.reinforcement_learning import get_returns
+from tensorboardX import SummaryWriter
 
 
 def main(args):
@@ -25,6 +26,9 @@ def main(args):
         with open(config_filename, 'w') as f:
             config.update(vars(args))
             json.dump(config, f, indent=2)
+
+    # Set tb_writer
+    tb_writer = SummaryWriter("./{0}/tb_logs".format(args.output_folder))
 
     if args.seed is not None:
         torch.manual_seed(args.seed)
@@ -60,8 +64,7 @@ def main(args):
         first_order=config['first-order'],
         device=args.device)
 
-    num_iterations = 0
-    for batch in trange(config['num-batches']):
+    for batch in range(config['num-batches']):
         tasks = sampler.sample_tasks(num_tasks=config['meta-batch-size'])
 
         futures = sampler.sample_async(
@@ -72,7 +75,7 @@ def main(args):
             gae_lambda=config['gae-lambda'],
             device=args.device)
 
-        logs = metalearner.step(
+        metalearner.step(
             *futures,
             max_kl=config['max-kl'],
             cg_iters=config['cg-iters'],
@@ -80,13 +83,10 @@ def main(args):
             ls_max_steps=config['ls-max-steps'],
             ls_backtrack_ratio=config['ls-backtrack-ratio'])
 
+        # For logging
         train_episodes, valid_episodes = sampler.sample_wait(futures)
-        num_iterations += sum(sum(episode.lengths) for episode in train_episodes[0])
-        num_iterations += sum(sum(episode.lengths) for episode in valid_episodes)
-        logs.update(tasks=tasks,
-                    num_iterations=num_iterations,
-                    train_returns=get_returns(train_episodes[0]),
-                    valid_returns=get_returns(valid_episodes))
+        tb_writer.add_scalars("reward/", {"train": np.mean(get_returns(train_episodes[0]))}, batch)
+        tb_writer.add_scalars("reward/", {"val": np.mean(get_returns(valid_episodes))}, batch)
 
         # Save policy
         if args.output_folder is not None:

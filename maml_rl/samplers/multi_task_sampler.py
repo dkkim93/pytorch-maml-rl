@@ -115,8 +115,7 @@ class MultiTaskSampler(Sampler):
             self.task_queue.put((index, task, kwargs))
 
         num_steps = kwargs.get('num_steps', 1)
-        futures = self._start_consumer_threads(tasks,
-                                               num_steps=num_steps)
+        futures = self._start_consumer_threads(tasks, num_steps=num_steps)
         self._waiting_sample = True
         return futures
 
