@@ -28,7 +28,8 @@ def main(args):
             json.dump(config, f, indent=2)
 
     # Set tb_writer
-    tb_writer = SummaryWriter("./{0}/tb_logs".format(args.output_folder))
+    log_name = "env-name::%s_num-steps::%s_log" % (config["env-name"], config["num-steps"])
+    tb_writer = SummaryWriter("./{0}/{1}_logs".format(args.output_folder, log_name))
 
     if args.seed is not None:
         torch.manual_seed(args.seed)
@@ -87,6 +88,7 @@ def main(args):
         train_episodes, valid_episodes = sampler.sample_wait(futures)
         tb_writer.add_scalars("reward/", {"train": np.mean(get_returns(train_episodes[0]))}, batch)
         tb_writer.add_scalars("reward/", {"val": np.mean(get_returns(valid_episodes))}, batch)
+        print(batch, np.mean(get_returns(train_episodes[0])), np.mean(get_returns(valid_episodes)))
 
         # Save policy
         if args.output_folder is not None:
