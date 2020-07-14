@@ -8,7 +8,7 @@ function print_header(){
 # Virtualenv
 virtualenv venv
 source venv/bin/activate
-pip3 install -r requirements.txt
+pip3.6 install -r requirements.txt
 
 # Comment for using GPU
 export CUDA_VISIBLE_DEVICES=-1
