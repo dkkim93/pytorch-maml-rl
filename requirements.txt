@@ -4,3 +4,4 @@ pyyaml>=5.1
 opencv-python
 tensorboardX==1.2
 gitpython==3.0.8
+matplotlib
