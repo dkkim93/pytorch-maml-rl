@@ -7,6 +7,7 @@ import numpy as np
 from maml_rl.metalearners import MAMLTRPO
 from maml_rl.baseline import LinearFeatureBaseline
 from maml_rl.samplers import MultiTaskSampler
+from maml_rl.utils.misc import set_log
 from maml_rl.samplers.sampler import make_env
 from maml_rl.utils.helpers import get_policy_for_env, get_input_size
 from maml_rl.utils.reinforcement_learning import get_returns
@@ -28,9 +29,11 @@ def main(args):
             json.dump(config, f, indent=2)
 
     # Set tb_writer
-    log_name = "env-name::%s_num-steps::%s_log" % (config["env-name"], config["num-steps"])
-    tb_writer = SummaryWriter("./{0}/{1}_logs".format(args.output_folder, log_name))
+    args.log_name = "env-name::%s_num-steps::%s_log" % (config["env-name"], config["num-steps"])
+    tb_writer = SummaryWriter("./{0}/tb_{1}_logs".format(args.output_folder, args.log_name))
+    log = set_log(args)
 
+    # Set seed
     if args.seed is not None:
         torch.manual_seed(args.seed)
         torch.cuda.manual_seed_all(args.seed)
@@ -86,9 +89,14 @@ def main(args):
 
         # For logging
         train_episodes, valid_episodes = sampler.sample_wait(futures)
+
+        log[args.log_name].info("At iteration {}, train_reward: {:.3f}".format(
+            batch, np.mean(get_returns(train_episodes[0])))) 
         tb_writer.add_scalars("reward/", {"train": np.mean(get_returns(train_episodes[0]))}, batch)
+
+        log[args.log_name].info("At iteration {}, valid_reward: {:.3f}".format(
+            batch, np.mean(get_returns(valid_episodes)))) 
         tb_writer.add_scalars("reward/", {"val": np.mean(get_returns(valid_episodes))}, batch)
-        print(batch, np.mean(get_returns(train_episodes[0])), np.mean(get_returns(valid_episodes)))
 
         # Save policy
         if args.output_folder is not None:
