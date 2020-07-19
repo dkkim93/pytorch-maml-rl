@@ -58,3 +58,6 @@ class SyncVectorEnv(SyncVectorEnv_):
 
         return (observations, rewards, np.copy(self._dones),
                 {'batch_ids': batch_ids, 'infos': infos})
+
+    def render(self):
+        self.envs[0].render()

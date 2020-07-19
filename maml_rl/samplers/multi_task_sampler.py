@@ -64,7 +64,7 @@ class MultiTaskSampler(Sampler):
     """
     def __init__(
             self, env_name, env_kwargs, batch_size, policy,
-            baseline, env=None, seed=None, num_workers=1):
+            baseline, env=None, seed=None, num_workers=1, is_meta_test=False):
 
         super(MultiTaskSampler, self).__init__(
             env_name, env_kwargs, batch_size, policy, seed=seed, env=env)
@@ -89,7 +89,8 @@ class MultiTaskSampler(Sampler):
                 self.task_queue,
                 self.train_episodes_queue,
                 self.valid_episodes_queue,
-                policy_lock)
+                policy_lock,
+                is_meta_test)
             for index in range(num_workers)]
 
         for worker in self.workers:
@@ -215,7 +216,8 @@ class SamplerWorker(mp.Process):
                  task_queue,
                  train_queue,
                  valid_queue,
-                 policy_lock):
+                 policy_lock,
+                 is_meta_test):
 
         super(SamplerWorker, self).__init__()
 
@@ -226,11 +228,11 @@ class SamplerWorker(mp.Process):
         self.batch_size = batch_size
         self.policy = policy
         self.baseline = baseline
-
         self.task_queue = task_queue
         self.train_queue = train_queue
         self.valid_queue = valid_queue
         self.policy_lock = policy_lock
+        self.is_meta_test = is_meta_test
 
     def sample(self,
                index,
@@ -286,11 +288,13 @@ class SamplerWorker(mp.Process):
         observations = self.envs.reset()
         with torch.no_grad():
             while not self.envs.dones.all():
+                if self.is_meta_test:
+                    self.envs.render()
+
                 observations_tensor = torch.from_numpy(observations)
                 pi = self.policy(observations_tensor, params=params)
                 actions_tensor = pi.sample()
                 actions = actions_tensor.cpu().numpy()
-
                 new_observations, rewards, _, infos = self.envs.step(actions)
                 batch_ids = infos['batch_ids']
                 yield (observations, actions, rewards, batch_ids)
