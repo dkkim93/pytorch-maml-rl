@@ -105,6 +105,7 @@ tmp/
 run.sh
 
 # Logs & Saves
+log*/
 logs/
 saves/
 wandb/
