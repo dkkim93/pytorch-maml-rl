@@ -68,6 +68,8 @@ def main(args):
         first_order=config['first-order'],
         device=args.device)
 
+    best_score = -np.inf
+
     for batch in range(config['num-batches']):
         tasks = sampler.sample_tasks(num_tasks=config['meta-batch-size'])
 
@@ -89,17 +91,18 @@ def main(args):
 
         # For logging
         train_episodes, valid_episodes = sampler.sample_wait(futures)
+        train_score = np.mean(get_returns(train_episodes[0]))
+        val_score = np.mean(get_returns(valid_episodes))
 
-        log[args.log_name].info("At iteration {}, train_reward: {:.3f}".format(
-            batch, np.mean(get_returns(train_episodes[0])))) 
-        tb_writer.add_scalars("reward/", {"train": np.mean(get_returns(train_episodes[0]))}, batch)
+        log[args.log_name].info("At iteration {}, train_reward: {:.3f}".format(batch, train_score)) 
+        tb_writer.add_scalars("reward/", {"train": train_score}, batch)
 
-        log[args.log_name].info("At iteration {}, valid_reward: {:.3f}".format(
-            batch, np.mean(get_returns(valid_episodes)))) 
-        tb_writer.add_scalars("reward/", {"val": np.mean(get_returns(valid_episodes))}, batch)
+        log[args.log_name].info("At iteration {}, valid_reward: {:.3f}".format(batch, val_score)) 
+        tb_writer.add_scalars("reward/", {"val": val_score}, batch)
 
         # Save policy
-        if args.output_folder is not None:
+        if val_score > best_score:
+            best_score = val_score
             with open(policy_filename, 'wb') as f:
                 torch.save(policy.state_dict(), f)
 
