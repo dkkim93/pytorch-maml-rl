@@ -29,7 +29,8 @@ def main(args):
             json.dump(config, f, indent=2)
 
     # Set tb_writer
-    args.log_name = "env-name::%s_num-steps::%s_log" % (config["env-name"], config["num-steps"])
+    args.log_name = "env-name::%s_num-steps::%s_fast-lr::%s_log" % (
+        config["env-name"], config["num-steps"], config["fast-lr"])
     tb_writer = SummaryWriter("./{0}/tb_{1}_logs".format(args.output_folder, args.log_name))
     log = set_log(args)
 
@@ -103,6 +104,7 @@ def main(args):
         # Save policy
         if val_score > best_score:
             best_score = val_score
+            log[args.log_name].info("Saving best valid score: {:.3f}".format(best_score)) 
             with open(policy_filename, 'wb') as f:
                 torch.save(policy.state_dict(), f)
 

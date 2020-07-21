@@ -4,7 +4,7 @@
 env-name: "MiniGrid-Empty-5x5-v0"
 
 # Discount factor gamma.
-gamma: 0.99
+gamma: 0.96
 
 # Discount factor lambda used in "Generalized Advantage Estimation" (GAE).
 gae-lambda: 0.95
@@ -26,7 +26,7 @@ nonlinearity: "tanh"
 fast-batch-size: 10
 
 # Number of gradient steps in the inner loop / fast adaptation.
-num-steps: 2
+num-steps: 3
 
 # Step size for each gradient step in the inner loop / fast adaptation.
 fast-lr: 0.05
