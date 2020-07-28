@@ -30,13 +30,11 @@ def get_returns(episodes):
 
 
 def reinforce_loss(policy, episodes, params=None):
-    pi = policy(episodes.observations.view((-1, *episodes.observation_shape)),
-                params=params)
+    pi = policy(episodes.observations.view((-1, *episodes.observation_shape)), params=params)
 
     log_probs = pi.log_prob(episodes.actions.view((-1, *episodes.action_shape)))
     log_probs = log_probs.view(len(episodes), episodes.batch_size)
 
-    losses = -weighted_mean(log_probs * episodes.advantages,
-                            lengths=episodes.lengths)
+    losses = -weighted_mean(log_probs * episodes.advantages, lengths=episodes.lengths)
 
     return losses.mean()

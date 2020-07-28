@@ -1,8 +1,6 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
-from collections import OrderedDict
 
 class LinearFeatureBaseline(nn.Module):
     """Linear baseline based on handcrafted features, as described in [1] 
@@ -14,15 +12,16 @@ class LinearFeatureBaseline(nn.Module):
     """
     def __init__(self, input_size, reg_coeff=1e-5):
         super(LinearFeatureBaseline, self).__init__()
+
         self.input_size = input_size
         self._reg_coeff = reg_coeff
 
-        self.weight = nn.Parameter(torch.Tensor(self.feature_size,),
-                                   requires_grad=False)
+        self.weight = nn.Parameter(torch.Tensor(self.feature_size,), requires_grad=False)
         self.weight.data.zero_()
-        self._eye = torch.eye(self.feature_size,
-                              dtype=torch.float32,
-                              device=self.weight.device)
+        self._eye = torch.eye(
+            self.feature_size,
+            dtype=torch.float32,
+            device=self.weight.device)
 
     @property
     def feature_size(self):
@@ -45,6 +44,7 @@ class LinearFeatureBaseline(nn.Module):
     def fit(self, episodes):
         # sequence_length * batch_size x feature_size
         featmat = self._feature(episodes).view(-1, self.feature_size)
+
         # sequence_length * batch_size x 1
         returns = episodes.returns.view(-1, 1)
 
@@ -58,7 +58,8 @@ class LinearFeatureBaseline(nn.Module):
             except RuntimeError:
                 reg_coeff *= 10
         else:
-            raise RuntimeError('Unable to solve the normal equations in '
+            raise RuntimeError(
+                'Unable to solve the normal equations in '
                 '`LinearFeatureBaseline`. The matrix X^T*X (with X the design '
                 'matrix) is not full-rank, regardless of the regularization '
                 '(maximum regularization: {0}).'.format(reg_coeff))

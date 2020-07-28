@@ -125,6 +125,7 @@ class BatchEpisodes(object):
     def compute_advantages(self, baseline, gae_lambda=1.0, normalize=True):
         # Compute the values based on the baseline
         values = baseline(self).detach()
+
         # Add an additional 0 at the end of values for
         # the estimation at the end of the episode
         values = F.pad(values * self.mask, (0, 0, 0, 1))
@@ -139,8 +140,7 @@ class BatchEpisodes(object):
 
         # Normalize the advantages
         if normalize:
-            self._advantages = weighted_normalize(self._advantages,
-                                                  lengths=self.lengths)
+            self._advantages = weighted_normalize(self._advantages, lengths=self.lengths)
         # Once the advantages are computed, the returns are not necessary
         # anymore (only to compute the parameters of the baseline)
         del self._returns

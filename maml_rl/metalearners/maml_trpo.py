@@ -1,9 +1,6 @@
 import torch
-
 from torch.nn.utils.convert_parameters import parameters_to_vector
 from torch.distributions.kl import kl_divergence
-
-from maml_rl.samplers import MultiTaskSampler
 from maml_rl.metalearners.base import GradientBasedMetaLearner
 from maml_rl.utils.torch_utils import (weighted_mean, detach_distribution,
                                        to_numpy, vector_to_parameters)
@@ -53,22 +50,24 @@ class MAMLTRPO(GradientBasedMetaLearner):
                  first_order=False,
                  device='cpu'):
         super(MAMLTRPO, self).__init__(policy, device=device)
+
         self.fast_lr = fast_lr
         self.first_order = first_order
 
     async def adapt(self, train_futures, first_order=None):
         if first_order is None:
             first_order = self.first_order
+
         # Loop over the number of steps of adaptation
         params = None
         for futures in train_futures:
-            inner_loss = reinforce_loss(self.policy,
-                                        await futures,
-                                        params=params)
-            params = self.policy.update_params(inner_loss,
-                                               params=params,
-                                               step_size=self.fast_lr,
-                                               first_order=first_order)
+            inner_loss = reinforce_loss(self.policy, await futures, params=params)
+            params = self.policy.update_params(
+                inner_loss,
+                params=params,
+                step_size=self.fast_lr,
+                first_order=first_order)
+
         return params
 
     def hessian_vector_product(self, kl, damping=1e-2):
@@ -99,8 +98,7 @@ class MAMLTRPO(GradientBasedMetaLearner):
             if old_pi is None:
                 old_pi = detach_distribution(pi)
 
-            log_ratio = (pi.log_prob(valid_episodes.actions)
-                         - old_pi.log_prob(valid_episodes.actions))
+            log_ratio = (pi.log_prob(valid_episodes.actions) - old_pi.log_prob(valid_episodes.actions))
             ratio = torch.exp(log_ratio)
 
             losses = -weighted_mean(ratio * valid_episodes.advantages,
