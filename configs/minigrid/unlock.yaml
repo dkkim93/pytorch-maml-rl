@@ -1,0 +1,60 @@
+# General
+# -------
+# Name of the environment.
+env-name: "MiniGrid-Unlock-v0"
+
+# Horizon of the environment
+horizon: 20
+
+# Discount factor gamma.
+gamma: 0.96
+
+# Discount factor lambda used in "Generalized Advantage Estimation" (GAE).
+gae-lambda: 0.95
+
+# If "true", then the first order approximation of MAML is applied.
+first-order: true
+
+# Policy network
+# --------------
+# Number of hidden units in each layer.
+hidden-sizes: [64, 64]
+
+# Non-linear activation function to apply after each hidden layer.
+nonlinearity: "tanh"
+
+# Task-specific
+# -------------
+# Number of trajectories to sample for each task.
+fast-batch-size: 25
+
+# Number of gradient steps in the inner loop / fast adaptation.
+num-steps: 3
+
+# Step size for each gradient step in the inner loop / fast adaptation.
+fast-lr: 0.05
+
+# Optimization
+# ------------
+# Number of outer-loop updates (ie. number of batches of tasks).
+num-batches: 200
+
+# Number of tasks in each batch of tasks.
+meta-batch-size: 20
+
+# TRPO-specific
+# -------------
+# Size of the trust-region.
+max-kl: 1.0e-2
+
+# Number of iterations of Conjugate Gradient.
+cg-iters: 10
+
+# Value of the damping in Conjugate Gradient.
+cg-damping: 1.0e-5
+
+# Maximum number of steps in the line search.
+ls-max-steps: 15
+
+# Ratio to use for backtracking during the line search.
+ls-backtrack-ratio: 0.8

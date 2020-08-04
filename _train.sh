@@ -18,5 +18,5 @@ export PYTHONPATH=./../gym-minigrid:$PYTHONPATH
 
 # Begin experiment
 python3.6 train.py \
---config configs/minigrid/empty.yaml \
+--config configs/minigrid/unlock.yaml \
 --output-folder log-minigrid-empty
