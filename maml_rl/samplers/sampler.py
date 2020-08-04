@@ -3,6 +3,7 @@ from gym_minigrid.wrappers import VectorObsWrapper
 
 
 def make_env(env_name):
+    # TODO Set horizon from config file
     def _make_env():
         env = gym.make(env_name)
         env.max_steps = min(env.max_steps, 20)
